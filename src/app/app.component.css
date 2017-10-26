@@ -29,8 +29,8 @@ ul, li {
 }
 
 #search:focus {
-  outline: none !important;
-  border: 2px solid #ADD8E6;
+  /* outline: none !important;
+  border: 2px solid #ADD8E6; */
 }
 
 .container {

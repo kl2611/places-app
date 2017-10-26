@@ -4,25 +4,21 @@
   <div class="form-group">
     <input 
       placeholder="Search for any location" 
-      autocorrect="off" 
-      autocapitalize="off" 
-      spellcheck="off" 
       type="text"
       class="form-control" 
-      id="search"
-      #search>
-      <!-- <form (ngSubmit)="onSubmit()"></form> -->
+      id="search">
+      <button id="search-btn" (click)="newSearch()">Search</button>
   </div>
 
   
   <div class="result-container">
     <div id="list">
-      <ul *ngIf="!markers.length">
+      <ul *ngIf="!markers || !markers.length">
         <li class="result-item-none">
           No results!
         </li>
       </ul>
-      <ul *ngIf="markers.length">
+      <ul *ngIf="markers && markers.length">
         <li class="result-item"
             (mouseenter)="selectMarker(i)"
             (click)="selectMarker(i)"
@@ -35,9 +31,4 @@
 
     <div id="map"></div>
   </div>
-
-
-  <!-- <agm-map [latitude]="latitude" [longitude]="longitude" [scrollwheel]="false" [zoom]="zoom">
-    <agm-marker [latitude]="latitude" [longitude]="longitude"></agm-marker>
-  </agm-map> -->
 </div>

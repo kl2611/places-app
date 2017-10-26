@@ -38,45 +38,45 @@ export class AppComponent implements OnInit {
     const initCoords = { lat: 37.7758, lng: -122.435 }; // default is SF
     const mapOptions = {
       center: initCoords, 
-      zoom: 13
+      zoom: 13,
+      mapTypeId: 'roadmap'
     };
 
-    this.bounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(-122.5228, -122.3471),
-      new google.maps.LatLng(37.7387, 37.8128)
-    )
-
+    // this.bounds = new google.maps.LatLngBounds(
+    //   new google.maps.LatLng(-122.5228, -122.3471),
+    //   new google.maps.LatLng(37.7387, 37.8128)
+    // )
+    this.markers = [];
     this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
     // Link search input to map
     var input = document.getElementById('search');
-    this.searchBox = new google.maps.places.SearchBox(input, {
-      bounds: this.bounds
-    });
-
+    this.searchBox = new google.maps.places.SearchBox(input);
+    // this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
     // Create InfoWindow
     this.infowindow = new google.maps.InfoWindow();
 
     // Event Listener for map movement
     
-    google.maps.event.addListener(this.map, 'idle', function() {
+    google.maps.event.addListener(this.map, 'bounds_changed', function() {
       console.log('idle event listener');
       // console.log(this.map.getBounds());
       // var bounds = this.map.getBounds();
-      var input = document.getElementById('search');
-      console.log('input', input);
-      this.searchBox.setBounds(this.map.getBounds());
+      // var input = document.getElementById('search');
+      // console.log('input', input);
+      var bounds = this.map.getBounds();
+      this.searchBox.setBounds(bounds);
       this.filterPlaces();
-      // console.log('getting new places', this.searchBox.getPlaces());
     }.bind(this));
 
     this.markers = [];
 
     // Event Listener for input places changed
-    this.searchBox.addListener('places_changed', this.retrieveDetails.bind(this));
+    google.maps.event.addListener(this.searchBox, 'places_changed', this.retrieveDetails.bind(this));
 
     this.bounds = new google.maps.LatLngBounds();
+    // this.map.fitBounds(this.bounds); 
   }
 
   filterPlaces() {
@@ -92,25 +92,6 @@ export class AppComponent implements OnInit {
 
     console.log('filter markers', this.filteredMarkers);
   }
-
-  // callback(results, status) {
-  //   // console.log(results);
-  //   console.log('callback invoked', results);
-  //   this.results = results;
-  //   if (status === google.maps.places.PlacesServiceStatus.OK) {
-  //     for (var i = 0; i < results.length; i++) {
-  //       var place = results[i];
-  //       this.createMarker(place);
-  //     }
-  //   }
-  // }
-
-  // ngOnChanges(changes: SimpleChanges): void {
-  //   console.log('changes', changes);
-  //   if (changes['results']) {
-  //     console.log('changes in results', this.results);
-  //   }
-  // }
 
   createMarker(place) {
     var placeLoc = place.geometry.location;
@@ -142,12 +123,77 @@ export class AppComponent implements OnInit {
 
   clearMarkers(markers: any[]) {
     this.markers.forEach(function(marker) {
-      marker.setMap(null);
+      marker.setMap(null); 
     });
     this.markers = [];
   }
 
+  newSearch() {
+    // Trigger search on button click
+    console.log('button clicked');
+    this.searchBox.setBounds(this.map.getBounds());
+
+    var input = document.getElementById('search');
+    console.log(input);
+    google.maps.event.trigger(input, 'focus');
+    google.maps.event.trigger(input, 'keydown', {
+      keyCode: 13
+    })
+  }
+
+  getPlaces() {
+    var places = this.searchBox.getPlaces();
+
+    if (places.length == 0) {
+      return;
+    }
+
+    // Clear out the old markers.
+    this.markers.forEach(function(marker) {
+      marker.setMap(null);
+    });
+    this.markers = [];
+
+    // For each place, get the icon, name and location.
+    var bounds = new google.maps.LatLngBounds();
+    places.forEach(function(place) {
+      if (!place.geometry) {
+        console.log("Returned place contains no geometry");
+        return;
+      }
+      var icon = {
+        url: place.icon,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(17, 34),
+        scaledSize: new google.maps.Size(25, 25)
+      };
+
+      // Create a marker for each place.
+      this.markers.push(new google.maps.Marker({
+        map: this.map,
+        icon: icon,
+        title: place.name,
+        position: place.geometry.location
+      }));
+
+      // if (place.geometry.viewport) {
+      //   // Only geocodes have viewport.
+      //   bounds.union(place.geometry.viewport);
+      // } else {
+      //   bounds.extend(place.geometry.location);
+      // }
+
+      bounds.extend(place.geometry.location);
+    }.bind(this));
+
+    this.map.fitBounds(bounds);
+  }
+
+
   retrieveDetails() {
+    console.log('places changed');
+    this.infowindow.close();
     var places = this.searchBox.getPlaces();
 
     console.log('places', places);
