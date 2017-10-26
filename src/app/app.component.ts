@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
   public google: any;
   public map: any;
   public service: any;
-  public infoWindow: any;
+  public infowindow: any;
 
   public results: any[];
   
@@ -40,7 +40,7 @@ export class AppComponent implements OnInit {
     };
 
     this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
-  
+    this.infowindow = new google.maps.InfoWindow();
     this.service = new google.maps.places.PlacesService(this.map);
     this.service.textSearch({
       location: initCoords,
@@ -60,24 +60,27 @@ export class AppComponent implements OnInit {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
       for (var i = 0; i < results.length; i++) {
         var place = results[i];
-        console.log('place', place);
-        
         this.createMarker(place);
       }
     }
   }
 
   createMarker(place) {
-    console.log('place', place);
+    var self = this;
+    // console.log('place', place);
     var placeLoc = place.geometry.location;
     var marker = new google.maps.Marker({
       map: this.map,
       position: place.geometry.location
     });
 
+
+    // console.log(this.infowindow);
+
     google.maps.event.addListener(marker, 'click', function() {
-      this.infowindow.setContent(place.name);
-      this.infowindow.open(this.map, this);
+      // console.log('windowInfo', self);
+      self.infowindow.setContent(place.name);
+      self.infowindow.open(self.map, marker);
     });
   }
 
