@@ -5,14 +5,12 @@ html, body {
   padding: 0;
   position: fixed;
   font-family: Roboto;
+  background-color: #deeff5;
 }
 
-/* body {
-  height:100%;
-  margin: 0;
-  padding: 0;
-  font-family: Roboto;
-} */
+button {
+  cursor: pointer;
+}
 
 app-root {
   display: block;

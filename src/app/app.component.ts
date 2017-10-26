@@ -1,8 +1,6 @@
-import { Component, ElementRef, NgZone, OnInit, OnChanges, 
-  SimpleChanges, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, NgZone, OnInit, ChangeDetectorRef } from '@angular/core';
 declare var google: any;
 import {Observable} from 'rxjs/Rx';
-import { FormControl } from '@angular/forms';
 import { } from 'googlemaps';
 
 @Component({
@@ -12,8 +10,6 @@ import { } from 'googlemaps';
 })
 
 export class AppComponent implements OnInit {
-  public searchControl: FormControl;
-
   public map: any;
   public service: any;
   public infowindow: any;
@@ -167,12 +163,13 @@ export class AppComponent implements OnInit {
 
       this.markers.push(newMarker);
 
-      if (place.geometry.viewport) {
-        // Only geocodes have viewport.
-        this.bounds.union(place.geometry.viewport);
-      } else {
-        this.bounds.extend(place.geometry.location);
-      }
+      // if (place.geometry.viewport) {
+      //   // Only geocodes have viewport.
+      //   this.bounds.union(place.geometry.viewport);
+      // } else {
+      //   this.bounds.extend(place.geometry.location);
+      // }
+      this.bounds.extend(place.geometry.location);
     }.bind(this));
 
     this.map.fitBounds(this.bounds);
