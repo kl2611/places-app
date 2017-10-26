@@ -26,7 +26,7 @@
         <li class="result-item"
             (mouseenter)="selectMarker(i)"
             (click)="selectMarker(i)"
-            *ngFor="let marker of markers; let i=index">
+            *ngFor="let marker of filteredMarkers; let i=index">
           {{i + 1}}. {{ marker.title }}
         </li>
       </ul>

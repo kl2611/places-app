@@ -25,6 +25,7 @@ export class AppComponent implements OnInit {
 
   public results: any[];
   public markers: any[];
+  public filteredMarkers: any[];
 
   constructor(private ref: ChangeDetectorRef) {
     setInterval(() => {
@@ -66,6 +67,7 @@ export class AppComponent implements OnInit {
       var input = document.getElementById('search');
       console.log('input', input);
       this.searchBox.setBounds(this.map.getBounds());
+      this.filterPlaces();
       // console.log('getting new places', this.searchBox.getPlaces());
     }.bind(this));
 
@@ -75,6 +77,20 @@ export class AppComponent implements OnInit {
     this.searchBox.addListener('places_changed', this.retrieveDetails.bind(this));
 
     this.bounds = new google.maps.LatLngBounds();
+  }
+
+  filterPlaces() {
+    var bounds = this.map.getBounds();
+    var filteredResults = [];
+    this.filteredMarkers = [];
+    for (var i = 0; i < this.markers.length; i++) {
+      if (bounds.contains(this.markers[i].getPosition())) {
+        // console.log(this.results[i]);
+        this.filteredMarkers.push(this.markers[i]);
+      }
+    }
+
+    console.log('filter markers', this.filteredMarkers);
   }
 
   // callback(results, status) {
@@ -110,7 +126,7 @@ export class AppComponent implements OnInit {
     // console.log(this.infowindow);
 
     // Marker click event listener
-    google.maps.event.addListener(marker, 'click', function() {
+    google.maps.event.addListener(marker, 'mouseenter', function() {
       // console.log('windowInfo', self);
       this.infowindow.setContent(place.name);
       this.infowindow.open(this.map, marker);
@@ -118,33 +134,40 @@ export class AppComponent implements OnInit {
   }
 
   selectMarker(i: number) {
-    console.log('select marker', this.markers[i]);
-    this.infowindow.setContent(this.markers[i].title);
+    console.log('select marker', this.results[i]);
+    this.infowindow.setContent('<div><strong>' + this.results[i].name + '</strong><br>' +
+    this.results[i].formatted_address + '</div>');
     this.infowindow.open(this.map, this.markers[i]);
   }
 
-  // onSubmit(query: string) {
-  //   console.log('new query', query);
-  //   // this.renderMap(query);
-  // }
+  clearMarkers(markers: any[]) {
+    this.markers.forEach(function(marker) {
+      marker.setMap(null);
+    });
+    this.markers = [];
+  }
 
   retrieveDetails() {
     var places = this.searchBox.getPlaces();
 
     console.log('places', places);
-    if (!places) {
+    this.results = places;
+
+    if (!places.length) {
       console.log("Select a valid place");
       places = [];
+      this.results =[];
+      this.clearMarkers(this.markers);
     }
 
     if (places.length == 0) return;
 
     // Clear out the old markers.
-    
-    this.markers.forEach(function(marker) {
-      marker.setMap(null);
-    });
-    this.markers = [];
+    this.clearMarkers(this.markers);    
+    // this.markers.forEach(function(marker) {
+    //   marker.setMap(null);
+    // });
+    // this.markers = [];
     // var bounds = this.map.getBounds();
     this.bounds = new google.maps.LatLngBounds();
     console.log('this.bounds', this.bounds);
@@ -166,9 +189,10 @@ export class AppComponent implements OnInit {
       });
 
       // Marker click event listener
-      google.maps.event.addListener(newMarker, 'click', function() {
+      google.maps.event.addListener(newMarker, 'mouseover', function() {
         // console.log('windowInfo', self);
-        this.infowindow.setContent(place.name);
+        this.infowindow.setContent('<div><strong>' + place.name + '</strong><br>' +
+        place.formatted_address + '</div>');
         this.infowindow.open(this.map, newMarker);
       }.bind(this));
 
