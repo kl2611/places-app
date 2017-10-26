@@ -13,7 +13,7 @@ import { } from 'googlemaps';
   styleUrls: ['./app.component.css']
 })
 
-export class AppComponent implements OnInit, OnChanges {
+export class AppComponent implements OnInit {
   public searchControl: FormControl;
 
   public map: any;
@@ -69,27 +69,26 @@ export class AppComponent implements OnInit, OnChanges {
     var bounds = new google.maps.LatLngBounds();
   }
 
-  callback(results, status) {
-    // console.log(results);
-    console.log('callback invoked', results);
-    this.results = results;
-    if (status === google.maps.places.PlacesServiceStatus.OK) {
-      for (var i = 0; i < results.length; i++) {
-        var place = results[i];
-        this.createMarker(place);
-      }
-    }
-  }
+  // callback(results, status) {
+  //   // console.log(results);
+  //   console.log('callback invoked', results);
+  //   this.results = results;
+  //   if (status === google.maps.places.PlacesServiceStatus.OK) {
+  //     for (var i = 0; i < results.length; i++) {
+  //       var place = results[i];
+  //       this.createMarker(place);
+  //     }
+  //   }
+  // }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('changes', changes);
-    if (changes['results']) {
-      console.log('changes in results', this.results);
-    }
-  }
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   console.log('changes', changes);
+  //   if (changes['results']) {
+  //     console.log('changes in results', this.results);
+  //   }
+  // }
 
   createMarker(place) {
-    // console.log('place', place);
     var placeLoc = place.geometry.location;
     var marker = new google.maps.Marker({
       map: this.map,
@@ -109,10 +108,10 @@ export class AppComponent implements OnInit, OnChanges {
     }.bind(this));
   }
 
-  onSubmit(query: string) {
-    console.log('new query', query);
-    // this.renderMap(query);
-  }
+  // onSubmit(query: string) {
+  //   console.log('new query', query);
+  //   // this.renderMap(query);
+  // }
 
   retrieveDetails() {
     console.log('searchbox', this.searchBox);
@@ -126,7 +125,6 @@ export class AppComponent implements OnInit, OnChanges {
     }
 
     if (places.length == 0) return;
-    console.log('this', this);
 
     // Clear out the old markers.
     
@@ -142,24 +140,31 @@ export class AppComponent implements OnInit, OnChanges {
         return;
       }
 
-      var icon = {
-        url: place.icon,
-        size: new google.maps.Size(71, 71),
-        origin: new google.maps.Point(0, 0),
-        anchor: new google.maps.Point(17, 34),
-        scaledSize: new google.maps.Size(25, 25)
-      }
+      // var icon = {
+      //   url: place.icon,
+      //   size: new google.maps.Size(71, 71),
+      //   origin: new google.maps.Point(0, 0),
+      //   anchor: new google.maps.Point(17, 34),
+      //   scaledSize: new google.maps.Size(25, 25)
+      // }
 
       // console.log('markers', this.markers)
 
       // Create a marker for each place.
-      console.log('this', this);
-      this.markers.push(new google.maps.Marker({
+      // console.log('this', this);
+      var newMarker = new google.maps.Marker({
         map: this.map,
-        icon: icon,
         title: place.name,
         position: place.geometry.location
-      }));
+      });
+
+      google.maps.event.addListener(newMarker, 'click', function() {
+        // console.log('windowInfo', self);
+        this.infowindow.setContent(place.name);
+        this.infowindow.open(this.map, newMarker);
+      }.bind(this));
+
+      this.markers.push(newMarker);
 
       if (place.geometry.viewport) {
         // Only geocodes have viewport.
@@ -168,6 +173,7 @@ export class AppComponent implements OnInit, OnChanges {
         bounds.extend(place.geometry.location);
       }
     }.bind(this));
+
     this.map.fitBounds(bounds);
   }
 
