@@ -26,6 +26,7 @@ export class AppComponent implements OnInit {
   public results: any[];
   public markers: any[];
   public filteredMarkers: any[];
+  public filteredResults: any[];
 
   constructor(private ref: ChangeDetectorRef) {
     setInterval(() => {
@@ -59,7 +60,7 @@ export class AppComponent implements OnInit {
 
     // Event Listener for map movement
     
-    google.maps.event.addListener(this.map, 'bounds_changed', function() {
+    google.maps.event.addListener(this.map, 'idle', function() {
       console.log('idle event listener');
       // console.log(this.map.getBounds());
       // var bounds = this.map.getBounds();
@@ -81,16 +82,18 @@ export class AppComponent implements OnInit {
 
   filterPlaces() {
     var bounds = this.map.getBounds();
-    var filteredResults = [];
+    this.filteredResults = [];
     this.filteredMarkers = [];
     for (var i = 0; i < this.markers.length; i++) {
       if (bounds.contains(this.markers[i].getPosition())) {
         // console.log(this.results[i]);
         this.filteredMarkers.push(this.markers[i]);
+        this.filteredResults.push(this.results[i]);
       }
     }
 
     console.log('filter markers', this.filteredMarkers);
+    console.log('filter markers', this.filteredResults);
   }
 
   createMarker(place) {
@@ -115,10 +118,10 @@ export class AppComponent implements OnInit {
   }
 
   selectMarker(i: number) {
-    console.log('select marker', this.results[i]);
-    this.infowindow.setContent('<div><strong>' + this.results[i].name + '</strong><br>' +
-    this.results[i].formatted_address + '</div>');
-    this.infowindow.open(this.map, this.markers[i]);
+    console.log('select marker', this.filteredResults[i]);
+    this.infowindow.setContent('<div><strong>' + this.filteredResults[i].name + '</strong><br>' +
+    this.filteredResults[i].formatted_address + '</div>');
+    this.infowindow.open(this.map, this.filteredMarkers[i]);
   }
 
   clearMarkers(markers: any[]) {
@@ -143,7 +146,7 @@ export class AppComponent implements OnInit {
 
   getPlaces() {
     var places = this.searchBox.getPlaces();
-
+ 
     if (places.length == 0) {
       return;
     }
