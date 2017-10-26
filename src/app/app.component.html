@@ -1,25 +1,26 @@
 <div class="container">
-  <h1>Search for a place!</h1>
+  <div class="header">Search for a place!</div>
 
   <div class="form-group">
-      <input 
-        placeholder="Search for a location" 
-        autocorrect="off" 
-        autocapitalize="off" 
-        spellcheck="off" 
-        type="text"
-        class="form-control" 
-        id="search"
-        #search>
-        <!-- <form (ngSubmit)="onSubmit()"></form> -->
-    </div>
+    <input 
+      placeholder="Search for a location" 
+      autocorrect="off" 
+      autocapitalize="off" 
+      spellcheck="off" 
+      type="text"
+      class="form-control" 
+      id="search"
+      #search>
+      <!-- <form (ngSubmit)="onSubmit()"></form> -->
+  </div>
 
   
   <div class="result-container">
     <div id="list">
       Places
       <ul>
-        <li *ngFor="let marker of markers">
+        <li class="result-item"
+            *ngFor="let marker of markers; let i=index">
           {{ marker.title }}
         </li>
       </ul>
