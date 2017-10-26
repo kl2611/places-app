@@ -17,11 +17,10 @@
   
   <div class="result-container">
     <div id="list">
-      Places
       <ul>
         <li class="result-item"
             *ngFor="let marker of markers; let i=index">
-          {{ marker.title }}
+          {{i + 1}}. {{ marker.title }}
         </li>
       </ul>
 
