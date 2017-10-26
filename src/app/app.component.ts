@@ -19,6 +19,7 @@ export class AppComponent implements OnInit {
   public map: any;
   public service: any;
   public infowindow: any;
+  public bounds: any;
   // public places: any; 
   public searchBox: any;
 
@@ -39,34 +40,41 @@ export class AppComponent implements OnInit {
       zoom: 13
     };
 
+    this.bounds = new google.maps.LatLngBounds(
+      new google.maps.LatLng(-122.5228, -122.3471),
+      new google.maps.LatLng(37.7387, 37.8128)
+    )
+
     this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
     // Link search input to map
     var input = document.getElementById('search');
-    this.searchBox = new google.maps.places.SearchBox(input);
+    this.searchBox = new google.maps.places.SearchBox(input, {
+      bounds: this.bounds
+    });
+
 
     // Create InfoWindow
     this.infowindow = new google.maps.InfoWindow();
 
-    // Places Service
-    // this.service = new  google.maps.places.PlacesService(this.map);
-    // this.service.textSearch({
-    //   location: initCoords,
-    //   radius: 500,
-    //   query: 'restaurant'
-    // }, this.callback.bind(this));  
-
-    // Search results will be within map bounds
-    this.map.addListener('bounds_changed', function() {
+    // Event Listener for map movement
+    
+    google.maps.event.addListener(this.map, 'idle', function() {
+      console.log('idle event listener');
+      // console.log(this.map.getBounds());
+      // var bounds = this.map.getBounds();
+      var input = document.getElementById('search');
+      console.log('input', input);
       this.searchBox.setBounds(this.map.getBounds());
+      // console.log('getting new places', this.searchBox.getPlaces());
     }.bind(this));
 
     this.markers = [];
 
-    // Places Changed
+    // Event Listener for input places changed
     this.searchBox.addListener('places_changed', this.retrieveDetails.bind(this));
 
-    var bounds = new google.maps.LatLngBounds();
+    this.bounds = new google.maps.LatLngBounds();
   }
 
   // callback(results, status) {
@@ -101,11 +109,18 @@ export class AppComponent implements OnInit {
 
     // console.log(this.infowindow);
 
+    // Marker click event listener
     google.maps.event.addListener(marker, 'click', function() {
       // console.log('windowInfo', self);
       this.infowindow.setContent(place.name);
       this.infowindow.open(this.map, marker);
     }.bind(this));
+  }
+
+  selectMarker(i: number) {
+    console.log('select marker', this.markers[i]);
+    this.infowindow.setContent(this.markers[i].title);
+    this.infowindow.open(this.map, this.markers[i]);
   }
 
   // onSubmit(query: string) {
@@ -114,8 +129,6 @@ export class AppComponent implements OnInit {
   // }
 
   retrieveDetails() {
-    console.log('searchbox', this.searchBox);
-    console.log('retrieving details', this.markers);
     var places = this.searchBox.getPlaces();
 
     console.log('places', places);
@@ -132,21 +145,14 @@ export class AppComponent implements OnInit {
       marker.setMap(null);
     });
     this.markers = [];
-
-    var bounds = new google.maps.LatLngBounds();
+    // var bounds = this.map.getBounds();
+    this.bounds = new google.maps.LatLngBounds();
+    console.log('this.bounds', this.bounds);
     places.forEach(function(place) {
       if (!place.geometry) {
         console.log("Returned place has no geometry");
         return;
       }
-
-      // var icon = {
-      //   url: place.icon,
-      //   size: new google.maps.Size(71, 71),
-      //   origin: new google.maps.Point(0, 0),
-      //   anchor: new google.maps.Point(17, 34),
-      //   scaledSize: new google.maps.Size(25, 25)
-      // }
 
       // console.log('markers', this.markers)
 
@@ -155,9 +161,11 @@ export class AppComponent implements OnInit {
       var newMarker = new google.maps.Marker({
         map: this.map,
         title: place.name,
-        position: place.geometry.location
+        position: place.geometry.location,
+        // animation: google.maps.Animation.DROP
       });
 
+      // Marker click event listener
       google.maps.event.addListener(newMarker, 'click', function() {
         // console.log('windowInfo', self);
         this.infowindow.setContent(place.name);
@@ -168,15 +176,14 @@ export class AppComponent implements OnInit {
 
       if (place.geometry.viewport) {
         // Only geocodes have viewport.
-        bounds.union(place.geometry.viewport);
+        this.bounds.union(place.geometry.viewport);
       } else {
-        bounds.extend(place.geometry.location);
+        this.bounds.extend(place.geometry.location);
       }
     }.bind(this));
 
-    this.map.fitBounds(bounds);
+    this.map.fitBounds(this.bounds);
   }
-
 
   // private setCurrentPosition() {
   //   if ("geolocation" in navigator) {

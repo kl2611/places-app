@@ -28,6 +28,11 @@ ul, li {
   outline: none;
 }
 
+#search:focus {
+  outline: none !important;
+  border: 2px solid #ADD8E6;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -53,8 +58,19 @@ ul, li {
   border-bottom: 1px solid #e6e6e6;
 }
 
-.form-group {
+.result-item-none {
+  padding: 20px 18px 20px 24px;
+  background-color: #FFF;
+  font-weight: normal;
+}
 
+.result-item:hover {
+  background-color: #f6fbfc;
+  font-weight: bold;
+}
+
+.form-group {
+  /* margin-bottom: 10px; */
 }
 
 .form-control {

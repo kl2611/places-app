@@ -1,9 +1,9 @@
 <div class="container">
-  <div class="header">Search for a place!</div>
+  <!-- <div class="header">Search for a place!</div> -->
 
   <div class="form-group">
     <input 
-      placeholder="Search for a location" 
+      placeholder="Search for any location" 
       autocorrect="off" 
       autocapitalize="off" 
       spellcheck="off" 
@@ -17,8 +17,15 @@
   
   <div class="result-container">
     <div id="list">
-      <ul>
+      <ul *ngIf="!markers.length">
+        <li class="result-item-none">
+          No results!
+        </li>
+      </ul>
+      <ul *ngIf="markers.length">
         <li class="result-item"
+            (mouseenter)="selectMarker(i)"
+            (click)="selectMarker(i)"
             *ngFor="let marker of markers; let i=index">
           {{i + 1}}. {{ marker.title }}
         </li>
