@@ -1,5 +1,7 @@
-import { Component, ElementRef, NgZone, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, NgZone, OnInit, OnChanges, 
+         SimpleChanges, ViewChild, ChangeDetectorRef } from '@angular/core';
 declare var google: any;
+import {Observable} from 'rxjs/Rx';
 import { FormControl } from '@angular/forms';
 import { } from 'googlemaps';
 // import { AgmCoreModule, MapsAPILoader } from '@agm/core';
@@ -11,53 +13,67 @@ import { } from 'googlemaps';
   styleUrls: ['./app.component.css']
 })
 
-export class AppComponent implements OnInit {
-  public latitude: number;
-  public longitude: number;
+export class AppComponent implements OnInit, OnChanges {
   public searchControl: FormControl;
-  public zoom: number;
-  public google: any;
+
   public map: any;
   public service: any;
   public infowindow: any;
+  // public places: any; 
+  public searchBox: any;
 
   public results: any[];
-  
-  // @ViewChild("search")
-  // public searchElementRef: ElementRef;
+  public markers: any[];
 
-  // constructor(
-  //   private mapsAPILoader: MapsAPILoader,
-  //   private ngZone: NgZone
-  // ) {}
+  constructor(private ref: ChangeDetectorRef) {
+    setInterval(() => {
+      this.ref.detectChanges();
+    }, 500)
+  }
 
   ngOnInit () {
-    console.log('this is ', this);
-    const initCoords = { lat: 37.7758, lng: -122.435 }; // this is SF
+    this.results = [];
+    const initCoords = { lat: 37.7758, lng: -122.435 }; // default is SF
     const mapOptions = {
       center: initCoords, 
       zoom: 13
     };
 
     this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
-    this.infowindow = new google.maps.InfoWindow();
-    this.service = new google.maps.places.PlacesService(this.map);
-    this.service.textSearch({
-      location: initCoords,
-      radius: 500,
-      query: 'restaurant'
-    }, this.callback.bind(this));
 
-    
-  
-    // The idle event is a debounced event, so we can query & listen without
-    // throwing too many requests at the server.
-    // this.map.addListener('idle', this.callback);
+    // Link search input to map
+    var input = document.getElementById('search');
+    this.searchBox = new google.maps.places.SearchBox(input);
+
+    // Create InfoWindow
+    this.infowindow = new google.maps.InfoWindow();
+
+    // Places Service
+    // this.service = new  google.maps.places.PlacesService(this.map);
+    // this.service.textSearch({
+    //   location: initCoords,
+    //   radius: 500,
+    //   query: 'restaurant'
+    // }, this.callback.bind(this));  
+
+    // Search results will be within map bounds
+    this.map.addListener('bounds_changed', function() {
+      this.searchBox.setBounds(this.map.getBounds());
+    }.bind(this));
+
+    this.markers = [];
+
+    // Places Changed
+    this.searchBox.addListener('places_changed', this.retrieveDetails.bind(this));
+
+    var bounds = new google.maps.LatLngBounds();
   }
 
   callback(results, status) {
-    console.log(results);
-    if (status == google.maps.places.PlacesServiceStatus.OK) {
+    // console.log(results);
+    console.log('callback invoked', results);
+    this.results = results;
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
       for (var i = 0; i < results.length; i++) {
         var place = results[i];
         this.createMarker(place);
@@ -65,33 +81,104 @@ export class AppComponent implements OnInit {
     }
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('changes', changes);
+    if (changes['results']) {
+      console.log('changes in results', this.results);
+    }
+  }
+
   createMarker(place) {
-    var self = this;
     // console.log('place', place);
     var placeLoc = place.geometry.location;
     var marker = new google.maps.Marker({
       map: this.map,
+      title: place.name,
       position: place.geometry.location
     });
 
+    this.markers.push(marker);
+    console.log('markers', this.markers);
 
     // console.log(this.infowindow);
 
     google.maps.event.addListener(marker, 'click', function() {
       // console.log('windowInfo', self);
-      self.infowindow.setContent(place.name);
-      self.infowindow.open(self.map, marker);
-    });
+      this.infowindow.setContent(place.name);
+      this.infowindow.open(this.map, marker);
+    }.bind(this));
   }
 
+  onSubmit(query: string) {
+    console.log('new query', query);
+    // this.renderMap(query);
+  }
 
-  private setCurrentPosition() {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        this.latitude = position.coords.latitude;
-        this.longitude = position.coords.longitude;
-        this.zoom = 12;
-      });
+  retrieveDetails() {
+    console.log('searchbox', this.searchBox);
+    console.log('retrieving details', this.markers);
+    var places = this.searchBox.getPlaces();
+
+    console.log('places', places);
+    if (!places) {
+      console.log("Select a valid place");
+      places = [];
     }
+
+    if (places.length == 0) return;
+    console.log('this', this);
+
+    // Clear out the old markers.
+    
+    this.markers.forEach(function(marker) {
+      marker.setMap(null);
+    });
+    this.markers = [];
+
+    var bounds = new google.maps.LatLngBounds();
+    places.forEach(function(place) {
+      if (!place.geometry) {
+        console.log("Returned place has no geometry");
+        return;
+      }
+
+      var icon = {
+        url: place.icon,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(17, 34),
+        scaledSize: new google.maps.Size(25, 25)
+      }
+
+      // console.log('markers', this.markers)
+
+      // Create a marker for each place.
+      console.log('this', this);
+      this.markers.push(new google.maps.Marker({
+        map: this.map,
+        icon: icon,
+        title: place.name,
+        position: place.geometry.location
+      }));
+
+      if (place.geometry.viewport) {
+        // Only geocodes have viewport.
+        bounds.union(place.geometry.viewport);
+      } else {
+        bounds.extend(place.geometry.location);
+      }
+    }.bind(this));
+    this.map.fitBounds(bounds);
   }
+
+
+  // private setCurrentPosition() {
+  //   if ("geolocation" in navigator) {
+  //     navigator.geolocation.getCurrentPosition((position) => {
+  //       this.latitude = position.coords.latitude;
+  //       this.longitude = position.coords.longitude;
+  //       this.zoom = 12;
+  //     });
+  //   }
+  // }
 }

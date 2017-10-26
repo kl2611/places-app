@@ -1,17 +1,35 @@
 <div class="container">
-  <h1>Angular 2 + Google Maps Places Autocomplete</h1>
+  <h1>Search for a place!</h1>
+
   <div class="form-group">
-    <input 
-      placeholder="search for location" 
-      autocorrect="off" 
-      autocapitalize="off" 
-      spellcheck="off" 
-      type="text" 
-      class="form-control" 
-      #search>
+      <input 
+        placeholder="Search for a location" 
+        autocorrect="off" 
+        autocapitalize="off" 
+        spellcheck="off" 
+        type="text"
+        class="form-control" 
+        id="search"
+        #search>
+        <!-- <form (ngSubmit)="onSubmit()"></form> -->
+    </div>
+
+  
+  <div class="result-container">
+    <div id="list">
+      Places
+      <ul>
+        <li *ngFor="let marker of markers">
+          {{ marker.title }}
+        </li>
+      </ul>
+
+    </div>
+
+    <div id="map"></div>
   </div>
 
-  <div id="map"></div>
+
   <!-- <agm-map [latitude]="latitude" [longitude]="longitude" [scrollwheel]="false" [zoom]="zoom">
     <agm-marker [latitude]="latitude" [longitude]="longitude"></agm-marker>
   </agm-map> -->
