@@ -31,7 +31,7 @@ ng serve
 Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
 ### Thoughts and Future Implementations
-I chose Angular 2 for this project due to its speed and performance in browser rendering. Angular CLI allowed for quick testing due to its reload on save. Furthermore, TypeScript is able to compile down to a version of JavaScript that runs on all browsers. 
+I chose Angular 2 for this project due to its speed and performance in browser rendering. I used Angular CLI build system, which allowed for quick testing due to its reload on save. Furthermore, TypeScript is able to compile down to a version of JavaScript that runs on all browsers. 
 <br />
 Future implementations incude: 
 - Render more information for each place from search results
