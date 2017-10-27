@@ -2,6 +2,13 @@
 
 A coding exercise utilizing Google Places API and Angular 2 with TypeScript. 
 
+### Demo
+Renders relevant list and markers from search input on the map
+![image](https://github.com/kl2611/places-app/blob/master/src/assets/demo1.png)
+
+Filters list of places and markers based on your map boundaries
+![image](https://github.com/kl2611/places-app/blob/master/src/assets/demo2.png)
+
 ### To Run
 Clone this repository to your local directory 
 ```
